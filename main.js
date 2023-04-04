@@ -15,7 +15,7 @@ const sourceChannelId = process.env.SOURCE_CHANNEL_ID ?? config.sourceChannelId;
 const targetChannelId = process.env.TARGET_CHANNEL_ID ?? config.targetChannelId;
 const errorLog = process.env.ERROR_LOG ?? config.errorLog ?? './error.log';
 
-const { Client, GatewayIntentBits } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const client = new Client({ intents: [ 
                                 GatewayIntentBits.DirectMessages,
                                 GatewayIntentBits.Guilds,
@@ -46,8 +46,11 @@ const client = new Client({ intents: [
             return; // Ignore messages from other channels
         }
 
-        targetChannel.send(`${message.author.username}: ${message.content}`);
+        const embed = new EmbedBuilder()
+            .setAuthor({ name: message.author.username, iconURL: message.author.avatarURL() })
+            .setDescription(message.content)
 
+        targetChannel.send({ embeds: [embed] });
     });
 
     client.login(token);
