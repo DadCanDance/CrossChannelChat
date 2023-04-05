@@ -45,7 +45,6 @@ client.on('messageCreate', (message) => {
             return; // Ignore messages from other channels
         }
                     
-        targetChannel = targetChannelId;
         targetChannel.send(`${message.author.username}: ${message.content}`);
 
     }catch (error) { //handle unknown errors
@@ -53,7 +52,7 @@ client.on('messageCreate', (message) => {
     }
 });
         
-client.login('token')
+client.login(token)
         .then(() => {
             logMessage('Bot logged in successfully');
         })
