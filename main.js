@@ -12,7 +12,7 @@ if (fs.existsSync('./config.json')) {
 const token = process.env.TOKEN ?? config.token;
 const sourceChannelId = process.env.SOURCE_CHANNEL_ID ?? config.sourceChannelId;
 const targetChannelId = process.env.TARGET_CHANNEL_ID ?? config.targetChannelId;
-const errorLog = process.env.ERROR_LOG ?? config.errorLog ?? './error.log';
+const errorLog = process.env.ERROR_LOG ?? config.errorLog ?? './logFile.log';
 
 const { Client, GatewayIntentBits } = require('discord.js');
 const client = new Client({ intents: [ 
@@ -22,15 +22,16 @@ const client = new Client({ intents: [
                                 GatewayIntentBits.MessageContent,] });
 
 
-    console.log(`discord.js version:  ${require("discord.js").version}`);
+logMessage(`discord.js version:  ${require("discord.js").version}`);
+
+client.on('ready', () => {
+    logMessage(`Logged in as ${client.user.tag}!`);
+});
 
 
-    client.on('ready', () => {
-        console.log(`Logged in as ${client.user.tag}!`);
-    });
+client.on('messageCreate', (message) => {
 
-
-    client.on('messageCreate', (message) => {
+    try {
 
         if (message.author.bot) return; // Ignore messages from bots
 
@@ -43,25 +44,35 @@ const client = new Client({ intents: [
         } else {
             return; // Ignore messages from other channels
         }
-
+                    
+        targetChannel = targetChannelId;
         targetChannel.send(`${message.author.username}: ${message.content}`);
 
-    });
+    }catch (error) { //handle unknown errors
+        logMessage(error);
+    }
+});
+        
+client.login('token')
+        .then(() => {
+            logMessage('Bot logged in successfully');
+        })
+        .catch(error => {
+            logMessage(`client.login: ${error}`);
+        });
 
-    client.login(token);
-    
-    
-//writes the specified error to a log file
-function logMessage(error) {
+        
+//writes the specified msg to a log file (default), or to console depending on config
+function logMessage(msg) {
     const timestamp = new Date().toISOString();
-    const message = `${timestamp} - ${error}\n`;
+    const message = `${timestamp} - ${msg}\n`;
 
     if (errorLog == 'stderr') {
         console.error(message);
     } else if (errorLog == 'stdout') {
         console.log(message);
     } else {
-        fs.appendFile('error.log', message, (err) => {
+        fs.appendFile(errorLog, message, (err) => {
             if (err) {
                 console.error(`Failed to write error to log file: ${err}`);
             }
@@ -69,7 +80,7 @@ function logMessage(error) {
     }
 }
 
-//no longer used - expect to run as service
+//only used if bot is run from console
 //This kills the process by hitting Enter in the cmd window
 process.stdin.on('data', (data) => {
     const input = data.toString().trim();
