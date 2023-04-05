@@ -1,11 +1,19 @@
 //Initial basic code for cross posting messages between 2 discord channels
 
 const fs = require('fs'); //built in file system class
-const config = require('./config.json');
 
-const token = config.token;
-const sourceChannelId = config.sourceChannelId;
-const targetChannelId = config.targetChannelId;
+// Check if config.json exists
+if (fs.existsSync('./config.json')) {
+    const config = require('./config.json');
+} else {
+    const config = { }
+}
+
+// Get token from environment variable
+const token = process.env.TOKEN ?? config.token;
+const sourceChannelId = process.env.SOURCE_CHANNEL_ID ?? config.sourceChannelId;
+const targetChannelId = process.env.TARGET_CHANNEL_ID ?? config.targetChannelId;
+const errorLog = process.env.ERROR_LOG ?? config.errorLog ?? './error.log';
 
 const { Client, GatewayIntentBits } = require('discord.js');
 const client = new Client({ intents: [ 
@@ -49,14 +57,20 @@ const client = new Client({ intents: [
 //no longer used
 function logMessage(error) {
     const timestamp = new Date().toISOString();
-    const logMessage = `${timestamp} - ${error}\n`;
-    fs.appendFile('error.log', logMessage, (err) => {
-        if (err) {
-            console.error(`Failed to write error to log file: ${err}`);
-        }
-    });
-}
+    const message = `${timestamp} - ${error}\n`;
 
+    if (errorLog == 'stderr') {
+        console.error(message);
+    } else if (errorLog == 'stdout') {
+        console.log(message);
+    } else {
+        fs.appendFile('error.log', message, (err) => {
+            if (err) {
+                console.error(`Failed to write error to log file: ${err}`);
+            }
+        });
+    }
+}
 
 //This kills the process by hitting Enter in the cmd window
 process.stdin.on('data', (data) => {
