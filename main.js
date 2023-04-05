@@ -1,6 +1,6 @@
 //Initial basic code for cross posting messages between 2 discord channels
 
-const fs = require('fs'); //built in file system class
+const fs = require('fs'); //file system module
 
 // Check if config.json exists
 if (fs.existsSync('./config.json')) {
@@ -19,7 +19,6 @@ const { Client, GatewayIntentBits } = require('discord.js');
 const client = new Client({ intents: [ 
                                 GatewayIntentBits.DirectMessages,
                                 GatewayIntentBits.Guilds,
-                                GatewayIntentBits.GuildBans,
                                 GatewayIntentBits.GuildMessages,
                                 GatewayIntentBits.MessageContent,] });
 
@@ -54,7 +53,6 @@ const client = new Client({ intents: [
     
     
 //writes the specified error to a log file
-//no longer used
 function logMessage(error) {
     const timestamp = new Date().toISOString();
     const message = `${timestamp} - ${error}\n`;
@@ -72,6 +70,7 @@ function logMessage(error) {
     }
 }
 
+//no longer used - expect to run as service
 //This kills the process by hitting Enter in the cmd window
 process.stdin.on('data', (data) => {
     const input = data.toString().trim();
