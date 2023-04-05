@@ -1,12 +1,11 @@
 //Initial basic code for cross posting messages between 2 discord channels
 
 const fs = require('fs'); //file system module
+let config = { }
 
 // Check if config.json exists
 if (fs.existsSync('./config.json')) {
-    const config = require('./config.json');
-} else {
-    const config = { }
+    config = require('./config.json');
 }
 
 // Get token from environment variable
